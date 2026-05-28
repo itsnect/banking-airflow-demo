@@ -1,0 +1,130 @@
+{
+  "title": "NECT — Airflow Demo: Transacciones ETL",
+  "uid": "nect-airflow-etl",
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Transacciones",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT COUNT(*) FROM transacciones",
+        "format": "table"
+      }],
+      "options": { "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "fixedColor": "green", "mode": "fixed" } } }
+    },
+    {
+      "id": 2,
+      "title": "Aprobadas",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT COUNT(*) FROM transacciones WHERE estado = 'aprobada'",
+        "format": "table"
+      }],
+      "fieldConfig": { "defaults": { "color": { "fixedColor": "green", "mode": "fixed" } } }
+    },
+    {
+      "id": 3,
+      "title": "Rechazadas",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT COUNT(*) FROM transacciones WHERE estado = 'rechazada'",
+        "format": "table"
+      }],
+      "fieldConfig": { "defaults": { "color": { "fixedColor": "red", "mode": "fixed" } } }
+    },
+    {
+      "id": 4,
+      "title": "Monto Total Aprobado (CLP)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT SUM(monto) FROM transacciones WHERE estado = 'aprobada'",
+        "format": "table"
+      }],
+      "fieldConfig": { "defaults": { "unit": "locale" } }
+    },
+    {
+      "id": 5,
+      "title": "Clientes Unicos",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT COUNT(DISTINCT rut) FROM transacciones",
+        "format": "table"
+      }]
+    },
+    {
+      "id": 6,
+      "title": "Transacciones por Tipo",
+      "type": "piechart",
+      "gridPos": { "x": 0, "y": 4, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT tipo AS \"Tipo\", COUNT(*) AS \"Total\" FROM transacciones GROUP BY tipo ORDER BY tipo",
+        "format": "table"
+      }]
+    },
+    {
+      "id": 7,
+      "title": "Monto por Tipo (CLP)",
+      "type": "bargauge",
+      "gridPos": { "x": 8, "y": 4, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT tipo AS \"Tipo\", SUM(monto) AS \"Monto\" FROM transacciones WHERE estado = 'aprobada' GROUP BY tipo ORDER BY \"Monto\" DESC",
+        "format": "table"
+      }],
+      "fieldConfig": { "defaults": { "unit": "locale" } }
+    },
+    {
+      "id": 8,
+      "title": "Transacciones por Region",
+      "type": "piechart",
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 8 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT region AS \"Region\", COUNT(*) AS \"Total\" FROM transacciones GROUP BY region ORDER BY \"Total\" DESC",
+        "format": "table"
+      }]
+    },
+    {
+      "id": 9,
+      "title": "Todas las Transacciones",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 10 },
+      "targets": [{
+        "datasource": "PostgreSQL",
+        "rawSql": "SELECT transaccion_id AS \"ID\", nombre AS \"Cliente\", tipo AS \"Tipo\", monto AS \"Monto CLP\", comercio AS \"Comercio\", region AS \"Region\", estado AS \"Estado\", fecha AS \"Fecha\" FROM transacciones ORDER BY fecha DESC, transaccion_id",
+        "format": "table"
+      }],
+      "fieldConfig": {
+        "overrides": [{
+          "matcher": { "id": "byName", "options": "Estado" },
+          "properties": [{
+            "id": "custom.displayMode",
+            "value": "color-background"
+          }, {
+            "id": "mappings",
+            "value": [
+              { "type": "value", "options": { "aprobada": { "color": "green", "index": 0 } } },
+              { "type": "value", "options": { "rechazada": { "color": "red", "index": 1 } } }
+            ]
+          }]
+        }]
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "time": { "from": "now-30d", "to": "now" }
+}

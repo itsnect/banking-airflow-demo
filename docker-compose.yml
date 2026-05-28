@@ -1,0 +1,156 @@
+version: "3.8"
+
+x-airflow-common: &airflow-common
+  build: .
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+    AIRFLOW__CORE__FERNET_KEY: "81HqDtbqAywKSOumSHMXSjKfSFTEkVMr3nNkFkwkq8c="
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__SECRET_KEY: "nect-airflow-secret"
+    # Conexiones via env
+    AIRFLOW_CONN_SFTP_DEFAULT: "sftp://nect:nect123@sftp:22"
+    AIRFLOW_CONN_POSTGRES_TRANSACCIONES: "postgresql://nect:nect123@postgres-data:5432/transacciones_db"
+    AIRFLOW_CONN_MONGO_TRANSACCIONES: "mongodb://nect:nect123@mongodb:27017/transacciones_db?authSource=admin"
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./config:/opt/airflow/config
+  depends_on:
+    postgres-airflow:
+      condition: service_healthy
+  networks:
+    - airflow-net
+
+services:
+
+  # ─── AIRFLOW METADATA DB ──────────────────────────────────
+  postgres-airflow:
+    image: postgres:16-alpine
+    container_name: postgres-airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    volumes:
+      - postgres_airflow_data:/var/lib/postgresql/data
+    networks:
+      - airflow-net
+
+  # ─── BASE DE DATOS DE TRANSACCIONES ───────────────────────
+  postgres-data:
+    image: postgres:16-alpine
+    container_name: postgres-data
+    environment:
+      POSTGRES_USER: nect
+      POSTGRES_PASSWORD: nect123
+      POSTGRES_DB: transacciones_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "nect"]
+      interval: 10s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - airflow-net
+
+  # ─── MONGODB ──────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: nect
+      MONGO_INITDB_ROOT_PASSWORD: nect123
+      MONGO_INITDB_DATABASE: transacciones_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - airflow-net
+
+  # ─── SFTP ─────────────────────────────────────────────────
+  sftp:
+    image: atmoz/sftp:latest
+    container_name: sftp
+    command: nect:nect123:::upload
+    ports:
+      - "2222:22"
+    volumes:
+      - ./sample-data:/home/nect/upload
+    networks:
+      - airflow-net
+
+  # ─── AIRFLOW INIT ─────────────────────────────────────────
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db init
+        airflow users create \
+          --username admin \
+          --firstname Claudio \
+          --lastname Nect \
+          --role Admin \
+          --email admin@nect.sh \
+          --password nect123
+    restart: on-failure
+
+  # ─── AIRFLOW WEBSERVER ────────────────────────────────────
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      retries: 5
+    restart: always
+
+  # ─── AIRFLOW SCHEDULER ────────────────────────────────────
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    command: scheduler
+    restart: always
+
+  # ─── GRAFANA ──────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-airflow
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: nect123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-clock-panel"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - airflow-net
+
+networks:
+  airflow-net:
+    driver: bridge
+
+volumes:
+  postgres_airflow_data:
+  postgres_data:
+  mongodb_data:
+  grafana_data:

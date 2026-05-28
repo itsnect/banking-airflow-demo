@@ -1,0 +1,16 @@
+transaccion_id,rut,nombre,tipo,monto,moneda,comercio,region,estado,fecha
+TXN-2024-001,12.345.678-9,Valentina Rojas Fuentes,compra,45990,CLP,Falabella,Metropolitana,aprobada,2024-11-01
+TXN-2024-002,15.678.901-2,Matías Contreras Pizarro,transferencia,250000,CLP,,Valparaíso,aprobada,2024-11-01
+TXN-2024-003,11.222.333-4,Camila Soto Herrera,compra,12990,CLP,Jumbo,Metropolitana,aprobada,2024-11-02
+TXN-2024-004,16.987.654-3,Diego Muñoz Araya,retiro,80000,CLP,,Biobío,aprobada,2024-11-02
+TXN-2024-005,12.345.678-9,Valentina Rojas Fuentes,pago,35000,CLP,Entel,Metropolitana,aprobada,2024-11-03
+TXN-2024-006,13.456.789-0,Javiera Espinoza Lagos,compra,189990,CLP,Ripley,Metropolitana,rechazada,2024-11-03
+TXN-2024-007,14.321.654-K,Sebastián Vidal Morales,transferencia,1500000,CLP,,Antofagasta,aprobada,2024-11-04
+TXN-2024-008,15.678.901-2,Matías Contreras Pizarro,compra,8990,CLP,McDonald's,Valparaíso,aprobada,2024-11-04
+TXN-2024-009,17.654.321-5,Constanza Medina Riquelme,pago,59990,CLP,Netflix Chile,Metropolitana,aprobada,2024-11-05
+TXN-2024-010,11.222.333-4,Camila Soto Herrera,retiro,50000,CLP,,Metropolitana,aprobada,2024-11-05
+TXN-2024-011,16.987.654-3,Diego Muñoz Araya,compra,299990,CLP,Paris,Biobío,rechazada,2024-11-06
+TXN-2024-012,12.345.678-9,Valentina Rojas Fuentes,transferencia,75000,CLP,,Metropolitana,aprobada,2024-11-06
+TXN-2024-013,13.456.789-0,Javiera Espinoza Lagos,pago,25990,CLP,Movistar,Metropolitana,aprobada,2024-11-07
+TXN-2024-014,14.321.654-K,Sebastián Vidal Morales,compra,99990,CLP,Copec,Antofagasta,aprobada,2024-11-07
+TXN-2024-015,17.654.321-5,Constanza Medina Riquelme,retiro,120000,CLP,,Metropolitana,aprobada,2024-11-08

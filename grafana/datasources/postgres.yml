@@ -1,0 +1,19 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres-data:5432
+    database: transacciones_db
+    user: nect
+    secureJsonData:
+      password: nect123
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 100
+      maxIdleConns: 200
+      connMaxLifetime: 14400
+      postgresVersion: 1600
+      timescaledb: false
+    isDefault: true
